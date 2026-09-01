@@ -95,6 +95,14 @@
     user-select:none;
     box-shadow:0 2px 6px rgba(0,0,0,0.3);
   }
+  .tile.text{
+    width:auto;
+    min-width:74px;
+    padding:0 12px;
+    font-size:13.5px;
+    font-weight:800;
+    color:var(--glace);
+  }
   .tile.dragging{cursor:grabbing;box-shadow:0 8px 20px rgba(0,0,0,0.5);transform:scale(1.08);}
   .tile.wrong-flash{animation:shake .4s;background:#7E1522;}
   @keyframes shake{
@@ -113,10 +121,17 @@
 <body>
 <div class="wrap">
   <header>
-    <p class="eyebrow">Glisse chaque animal vers son habitat</p>
-    <h1>Trouve sa<br><span>Maison</span></h1>
+    <p class="eyebrow">Glisse chaque élément vers la bonne catégorie</p>
+    <h1>Jeu<br><span>d'Association</span></h1>
     <div class="centerline"></div>
   </header>
+
+  <div class="tabs">
+    <button class="tabbtn themebtn active" data-theme="animaux">🐾 Animaux</button>
+    <button class="tabbtn themebtn" data-theme="drapeaux">🚩 Drapeaux</button>
+    <button class="tabbtn themebtn" data-theme="aliments">🍎 Aliments</button>
+    <button class="tabbtn themebtn" data-theme="mots">🔤 Mots</button>
+  </div>
 
   <div class="tabs">
     <button class="tabbtn diffbtn" data-diff="facile">Facile</button>
@@ -130,7 +145,7 @@
     <button class="btn btn-ghost" id="newGameBtn">Nouvelle partie</button>
   </div>
 
-  <p class="instructions">Touche un animal et glisse-le jusqu'à la bonne maison.</p>
+  <p class="instructions">Touche un élément et glisse-le jusqu'à la bonne catégorie.</p>
 
   <div class="zones" id="zones"></div>
   <div class="tray" id="tray"></div>
@@ -145,19 +160,52 @@
 </div>
 
 <script>
-const HABITATS = {
-  ferme:   {name:'Ferme',    icon:'🚜', animals:['🐄','🐷','🐔','🐑','🐴']},
-  foret:   {name:'Forêt',    icon:'🌲', animals:['🦊','🐻','🦌','🐿️','🦔']},
-  ocean:   {name:'Océan',    icon:'🌊', animals:['🐳','🐬','🐙','🐠','🦀']},
-  jungle:  {name:'Jungle',   icon:'🌴', animals:['🦁','🐒','🐍','🦜','🐆']},
-  arctique:{name:'Arctique', icon:'❄️', animals:['🐧','🦭','🐻‍❄️']}
+const THEMES = {
+  animaux: {
+    label: 'Animaux', type: 'emoji',
+    categories: {
+      ferme:   {name:'Ferme',    icon:'🚜', items:['🐄','🐷','🐔','🐑','🐴']},
+      foret:   {name:'Forêt',    icon:'🌲', items:['🦊','🐻','🦌','🐿️','🦔']},
+      ocean:   {name:'Océan',    icon:'🌊', items:['🐳','🐬','🐙','🐠','🦀']},
+      jungle:  {name:'Jungle',   icon:'🌴', items:['🦁','🐒','🐍','🦜','🐆']},
+      arctique:{name:'Arctique', icon:'❄️', items:['🐧','🦭','🐻\u200d❄️']}
+    }
+  },
+  drapeaux: {
+    label: 'Drapeaux', type: 'emoji',
+    categories: {
+      europe:   {name:'Europe',   icon:'🏰', items:['🇫🇷','🇩🇪','🇮🇹','🇪🇸','🇬🇧']},
+      amerique: {name:'Amérique', icon:'🗽', items:['🇨🇦','🇺🇸','🇧🇷','🇲🇽','🇦🇷']},
+      asie:     {name:'Asie',     icon:'🏯', items:['🇯🇵','🇨🇳','🇮🇳','🇰🇷','🇹🇭']},
+      afrique:  {name:'Afrique',  icon:'🌍', items:['🇪🇬','🇿🇦','🇰🇪','🇲🇦','🇳🇬']}
+    }
+  },
+  aliments: {
+    label: 'Aliments', type: 'emoji',
+    categories: {
+      fruits:    {name:'Fruits',     icon:'🍏', items:['🍎','🍌','🍇','🍓','🍊']},
+      legumes:   {name:'Légumes',    icon:'🥦', items:['🥕','🥦','🥬','🌽','🍅']},
+      proteines: {name:'Protéines',  icon:'🍗', items:['🍗','🥩','🐟','🥚','🫘']},
+      feculents: {name:'Féculents',  icon:'🍞', items:['🍞','🍚','🍝','🥔','🌾']}
+    }
+  },
+  mots: {
+    label: 'Mots', type: 'text',
+    categories: {
+      noms:       {name:'Noms',       icon:'📦', items:['Chat','Maison','École','Ballon','Arbre']},
+      verbes:     {name:'Verbes',     icon:'🏃', items:['Courir','Manger','Dormir','Chanter','Sauter']},
+      adjectifs:  {name:'Adjectifs',  icon:'✨', items:['Grand','Joli','Rapide','Heureux','Froid']}
+    }
+  }
 };
+let theme = 'animaux';
 
-const DIFFICULTY = {
-  facile:    {habitats:['ferme','ocean'], perHabitat:2},
-  normal:    {habitats:['ferme','foret','ocean'], perHabitat:3},
-  difficile: {habitats:['ferme','foret','ocean','jungle','arctique'], perHabitat:3}
-};
+function getDifficultyConfig(){
+  const catKeys = Object.keys(THEMES[theme].categories);
+  if(difficulty === 'facile')    return { cats: catKeys.slice(0, 2), perCat: 2 };
+  if(difficulty === 'normal')    return { cats: catKeys.slice(0, Math.min(3, catKeys.length)), perCat: 3 };
+  return { cats: catKeys, perCat: 3 };
+}
 let difficulty = 'normal';
 
 const COIN_STORAGE_KEY = 'quiEstCeCoinsGlobal';
@@ -185,6 +233,14 @@ document.querySelectorAll('.diffbtn').forEach(btn=>{
   });
 });
 
+document.querySelectorAll('.themebtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    theme = btn.dataset.theme;
+    document.querySelectorAll('.themebtn').forEach(b=>b.classList.toggle('active', b===btn));
+    startGame();
+  });
+});
+
 const zonesEl = document.getElementById('zones');
 const trayEl = document.getElementById('tray');
 const mistakeCountEl = document.getElementById('mistakeCount');
@@ -197,7 +253,8 @@ let zoneProgress = {};
 let zoneTotals = {};
 
 function startGame(){
-  const cfg = DIFFICULTY[difficulty];
+  const cfg = getDifficultyConfig();
+  const themeData = THEMES[theme];
   mistakes = 0;
   placedTiles = 0;
   mistakeCountEl.textContent = 0;
@@ -205,23 +262,23 @@ function startGame(){
   zoneTotals = {};
 
   allTiles = [];
-  cfg.habitats.forEach(hkey=>{
-    const h = HABITATS[hkey];
-    const chosen = shuffle(h.animals).slice(0, cfg.perHabitat);
-    zoneTotals[hkey] = chosen.length;
-    zoneProgress[hkey] = 0;
-    chosen.forEach(icon=> allTiles.push({icon, habitat:hkey}));
+  cfg.cats.forEach(ckey=>{
+    const c = themeData.categories[ckey];
+    const chosen = shuffle(c.items).slice(0, cfg.perCat);
+    zoneTotals[ckey] = chosen.length;
+    zoneProgress[ckey] = 0;
+    chosen.forEach(icon=> allTiles.push({icon, habitat:ckey}));
   });
   totalTiles = allTiles.length;
   allTiles = shuffle(allTiles);
 
-  zonesEl.style.gridTemplateColumns = cfg.habitats.length <= 2 ? '1fr 1fr' : (cfg.habitats.length >=5 ? 'repeat(3,1fr)' : 'repeat(2,1fr)');
-  zonesEl.innerHTML = cfg.habitats.map(hkey=>{
-    const h = HABITATS[hkey];
-    return `<div class="dropzone" data-habitat="${hkey}">
-      <div class="zicon">${h.icon}</div>
-      <div class="zname">${h.name}</div>
-      <div class="zprog" id="zprog-${hkey}">0/${zoneTotals[hkey]}</div>
+  zonesEl.style.gridTemplateColumns = cfg.cats.length <= 2 ? '1fr 1fr' : (cfg.cats.length >=5 ? 'repeat(3,1fr)' : 'repeat(2,1fr)');
+  zonesEl.innerHTML = cfg.cats.map(ckey=>{
+    const c = themeData.categories[ckey];
+    return `<div class="dropzone" data-habitat="${ckey}">
+      <div class="zicon">${c.icon}</div>
+      <div class="zname">${c.name}</div>
+      <div class="zprog" id="zprog-${ckey}">0/${zoneTotals[ckey]}</div>
     </div>`;
   }).join('');
 
@@ -229,10 +286,11 @@ function startGame(){
 }
 
 function renderTray(){
+  const isText = THEMES[theme].type === 'text';
   trayEl.innerHTML = '';
   allTiles.forEach((tileData, idx)=>{
     const el = document.createElement('div');
-    el.className = 'tile';
+    el.className = 'tile' + (isText ? ' text' : '');
     el.textContent = tileData.icon;
     el.dataset.idx = idx;
     trayEl.appendChild(el);
