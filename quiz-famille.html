@@ -263,20 +263,19 @@ let roomData = null;
 let myQuizOrder = [];
 let hasAnsweredCurrent = false;
 let questionTimer = null;
-let localQuestionSet = [];
 
 document.getElementById('createBtn').addEventListener('click', ()=>{
   myName = document.getElementById('nameInput').value.trim() || 'Hôte';
   myPlayerId = genPlayerId();
   myRoomCode = genCode();
   amHost = true;
-  localQuestionSet = shuffle(QUESTIONS).slice(0, 12);
+  const order = shuffle(QUESTIONS.map((_,i)=>i)).slice(0, 12);
   fbDb.ref(ROOM_PREFIX + myRoomCode).set({
     status: 'lobby',
     hostId: myPlayerId,
     currentQuestion: 0,
     questionStartedAt: 0,
-    numQuestions: localQuestionSet.length,
+    questionOrder: order,
     players: { [myPlayerId]: { name: myName, score: 0 } },
     createdAt: firebase.database.ServerValue.TIMESTAMP
   }).then(()=>{
@@ -346,8 +345,8 @@ function renderQuestion(){
     document.getElementById('answeredWait').style.display = 'none';
   }
   showView('question');
-  const total = roomData.numQuestions || localQuestionSet.length || QUESTIONS.length;
-  const q = (localQuestionSet.length ? localQuestionSet : QUESTIONS)[qi];
+  const total = (roomData.questionOrder && roomData.questionOrder.length) || QUESTIONS.length;
+  const q = QUESTIONS[roomData.questionOrder[qi]];
   document.getElementById('qCounter').textContent = `Question ${qi+1}/${total}`;
   document.getElementById('qText').textContent = q.q;
 
@@ -428,7 +427,7 @@ function showResultScreen(correct, points){
 
 document.getElementById('nextBtn').addEventListener('click', ()=>{
   if(!amHost) return;
-  const total = roomData.numQuestions || localQuestionSet.length;
+  const total = (roomData.questionOrder && roomData.questionOrder.length) || QUESTIONS.length;
   const next = roomData.currentQuestion + 1;
   if(next >= total){
     roomRef.update({ status:'finished' });
