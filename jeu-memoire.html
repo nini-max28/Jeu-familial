@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jeu de mémoire — Animaux</title>
+<style>
+  :root{
+    --rouge: #0E9594;
+    --rouge-fonce: #0A6867;
+    --bleu: #12262A;
+    --bleu-clair: #1C3A40;
+    --glace: #EDF1F5;
+    --acier: #0B1518;
+    --acier-clair: #172A2E;
+    --or: #D9A441;
+    --texte: #EDF1F5;
+    --texte-att: #8FB3AF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(14,149,148,0.20), transparent 60%),
+      var(--acier);
+    color:var(--texte);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 0 60px;}
+
+  header{padding:28px 20px 22px;text-align:center;}
+  .eyebrow{font-size:13px;color:var(--texte-att);margin:0 0 6px;}
+  h1{
+    font-family:"Arial Narrow",Arial,sans-serif;
+    font-weight:900;font-stretch:condensed;font-size:40px;line-height:0.95;
+    margin:0;letter-spacing:0.5px;color:var(--glace);text-transform:uppercase;
+    text-shadow:0 2px 0 rgba(0,0,0,0.25);
+  }
+  h1 span{color:var(--rouge);}
+  .centerline{height:3px;margin:18px auto 0;max-width:560px;background:linear-gradient(90deg, transparent, var(--rouge) 15%, var(--rouge) 85%, transparent);position:relative;}
+  .centerline::after{content:"";position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border:3px solid var(--rouge);border-radius:50%;background:var(--acier);}
+
+  .tabs{display:flex;gap:8px;padding:0 16px;margin-top:20px;}
+  .tabbtn{flex:1;background:var(--acier-clair);color:var(--texte-att);border:none;border-radius:10px;padding:11px 6px;font-size:13px;font-weight:700;cursor:pointer;}
+  .tabbtn.active{background:var(--rouge);color:#fff;}
+
+  .coinbar{padding:14px 16px 0;display:flex;justify-content:center;}
+  .pill{background:var(--acier-clair);border-radius:999px;padding:8px 14px;font-size:14px;color:var(--texte-att);display:flex;align-items:center;gap:8px;}
+  .pill b{color:var(--glace);font-size:16px;}
+  .coinpill{background:linear-gradient(90deg, rgba(217,164,65,0.18), rgba(217,164,65,0.05));border:1px solid rgba(217,164,65,0.35);}
+  .coinpill b{color:var(--or);}
+
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;gap:10px;flex-wrap:wrap;}
+  .btn{border:none;cursor:pointer;font-weight:700;border-radius:10px;padding:10px 16px;font-size:14px;}
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{background:var(--rouge);color:#fff;}
+  .btn-ghost{background:transparent;color:var(--texte-att);border:1px solid #234F4C;}
+
+  .difficulty{display:flex;gap:8px;padding:14px 16px 0;}
+
+  .memgrid{display:grid;gap:8px;padding:16px;}
+  .memcard{aspect-ratio:1;perspective:600px;cursor:pointer;}
+  .memcardface{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .35s ease;}
+  .memcard.flipped .memcardface{transform:rotateY(180deg);}
+  .memfront,.memback{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .memback{background:linear-gradient(160deg, var(--rouge), var(--rouge-fonce));font-size:20px;}
+  .memfront{background:var(--glace);transform:rotateY(180deg);font-size:28px;}
+  .memcard.matched .memfront{background:#B7F0CC;}
+
+  .turnbar{padding:14px 16px 0;display:flex;gap:10px;}
+  .playerscore{flex:1;background:var(--bleu);border-radius:12px;padding:12px;text-align:center;}
+  .playerscore.active{background:var(--rouge);}
+  .playerscore .pname{font-size:12px;color:var(--texte-att);}
+  .playerscore.active .pname{color:rgba(255,255,255,0.85);}
+  .playerscore .pscore{font-size:22px;font-weight:900;color:var(--glace);}
+
+  .overlay{position:fixed;inset:0;background:rgba(6,10,10,0.9);display:none;align-items:center;justify-content:center;padding:24px;z-index:20;}
+  .overlay.show{display:flex;}
+  .overlaycard{background:var(--bleu);border-radius:18px;padding:26px 22px 22px;text-align:center;max-width:360px;width:100%;}
+  .overlaycard h3{margin:0 0 8px;font-size:22px;color:var(--glace);}
+  .overlaycard p{margin:0 0 18px;color:#AFD4CF;font-size:13.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Trouve toutes les paires d'animaux</p>
+    <h1>Jeu de<br><span>Mémoire</span></h1>
+    <div class="centerline"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tabbtn active" id="tabSolo">Solo</button>
+    <button class="tabbtn" id="tabDuel">Face à face (à 2)</button>
+  </div>
+
+  <div class="coinbar">
+    <div class="pill coinpill">Pièces&nbsp;<b id="coinCount">20</b></div>
+  </div>
+
+  <div class="difficulty">
+    <button class="tabbtn diffbtn" data-diff="facile">Facile (6 paires)</button>
+    <button class="tabbtn diffbtn active" data-diff="normal">Normal (8 paires)</button>
+    <button class="tabbtn diffbtn" data-diff="difficile">Difficile (12 paires)</button>
+    <button class="tabbtn diffbtn" data-diff="expert">Expert (18 paires)</button>
+  </div>
+
+  <div class="statusbar" id="soloStatus">
+    <div class="pill">Essais&nbsp;<b id="soloMoves">0</b></div>
+    <div class="pill">Paires&nbsp;<b id="soloPairs">0/8</b></div>
+    <button class="btn btn-ghost" id="newSoloBtn">Nouvelle partie</button>
+  </div>
+
+  <div class="turnbar" id="duelTurnbar" style="display:none;">
+    <div class="playerscore active" id="p1Score">
+      <div class="pname">Joueur 1</div>
+      <div class="pscore" id="p1ScoreNum">0</div>
+    </div>
+    <div class="playerscore" id="p2Score">
+      <div class="pname">Joueur 2</div>
+      <div class="pscore" id="p2ScoreNum">0</div>
+    </div>
+  </div>
+  <div class="statusbar" id="duelStatus" style="display:none;">
+    <button class="btn btn-ghost" id="newDuelBtn">Nouvelle partie</button>
+  </div>
+
+  <div class="memgrid" id="memGrid"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlaycard">
+    <h3 id="resultTitle">Bravo! 🎉</h3>
+    <p id="resultText">Tu as trouvé toutes les paires!</p>
+    <button class="btn btn-primary" id="playAgainBtn" style="width:100%;">Rejouer</button>
+  </div>
+</div>
+
+<script>
+const ANIMALS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦆','🦉','🦇','🐺','🦄','🐝','🦋','🐢','🐍','🦎','🐙','🐬','🦈','🐳','🦒'];
+
+const COIN_STORAGE_KEY = 'quiEstCeCoinsGlobal';
+function loadSavedCoins(){
+  try{
+    const saved = localStorage.getItem(COIN_STORAGE_KEY);
+    if(saved !== null){ const n = parseInt(saved, 10); if(!isNaN(n)) return n; }
+  }catch(e){}
+  return 20;
+}
+let coinBalance = loadSavedCoins();
+const coinCountEl = document.getElementById('coinCount');
+coinCountEl.textContent = coinBalance;
+function saveCoins(){ try{ localStorage.setItem(COIN_STORAGE_KEY, String(coinBalance)); }catch(e){} }
+function addCoins(n){ coinBalance += n; coinCountEl.textContent = coinBalance; saveCoins(); }
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function bindTap(el, handler){
+  if(!el) return;
+  el.addEventListener('touchstart', function(){
+    const active = document.activeElement;
+    if(active && active !== el && typeof active.blur === 'function') active.blur();
+  }, {passive:true});
+  el.addEventListener('click', handler);
+}
+
+const DIFFICULTY = {
+  facile:    {pairs:6,  cols:3},
+  normal:    {pairs:8,  cols:4},
+  difficile: {pairs:12, cols:4},
+  expert:    {pairs:18, cols:6}
+};
+let difficulty = 'normal';
+
+/* ---------- Mode tabs ---------- */
+const tabSolo = document.getElementById('tabSolo');
+const tabDuel = document.getElementById('tabDuel');
+const soloStatus = document.getElementById('soloStatus');
+const duelStatus = document.getElementById('duelStatus');
+const duelTurnbar = document.getElementById('duelTurnbar');
+let mode = 'solo';
+
+tabSolo.addEventListener('click', ()=>switchMode('solo'));
+tabDuel.addEventListener('click', ()=>switchMode('duel'));
+function switchMode(m){
+  mode = m;
+  tabSolo.classList.toggle('active', m==='solo');
+  tabDuel.classList.toggle('active', m==='duel');
+  soloStatus.style.display = m==='solo' ? '' : 'none';
+  duelStatus.style.display = m==='duel' ? '' : 'none';
+  duelTurnbar.style.display = m==='duel' ? '' : 'none';
+  startGame();
+}
+
+document.querySelectorAll('.diffbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    difficulty = btn.dataset.diff;
+    document.querySelectorAll('.diffbtn').forEach(b=>b.classList.toggle('active', b===btn));
+    startGame();
+  });
+});
+
+/* ---------- Game state ---------- */
+const memGridEl = document.getElementById('memGrid');
+const soloMovesEl = document.getElementById('soloMoves');
+const soloPairsEl = document.getElementById('soloPairs');
+const p1ScoreEl = document.getElementById('p1Score');
+const p2ScoreEl = document.getElementById('p2Score');
+const p1ScoreNum = document.getElementById('p1ScoreNum');
+const p2ScoreNum = document.getElementById('p2ScoreNum');
+
+let cards = [];
+let flippedIdx = [];
+let matchedCount = 0;
+let totalPairs = 8;
+let locked = false;
+let soloMoves = 0;
+let duelTurn = 1;
+let p1Score = 0;
+let p2Score = 0;
+
+function startGame(){
+  const cfg = DIFFICULTY[difficulty];
+  totalPairs = cfg.pairs;
+  const chosen = shuffle(ANIMALS).slice(0, cfg.pairs);
+  cards = shuffle([...chosen, ...chosen]).map((icon,i)=>({icon, id:i, matched:false}));
+  flippedIdx = [];
+  matchedCount = 0;
+  locked = false;
+  soloMoves = 0;
+  duelTurn = 1;
+  p1Score = 0;
+  p2Score = 0;
+
+  memGridEl.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+  soloMovesEl.textContent = soloMoves;
+  soloPairsEl.textContent = `0/${totalPairs}`;
+  updateDuelUI();
+  renderGrid();
+}
+
+function renderGrid(){
+  memGridEl.innerHTML = cards.map((c,i)=>`
+    <div class="memcard ${c.matched?'matched flipped':''}" data-idx="${i}">
+      <div class="memcardface">
+        <div class="memback">🐾</div>
+        <div class="memfront">${c.icon}</div>
+      </div>
+    </div>`).join('');
+  memGridEl.querySelectorAll('.memcard').forEach(el=>{
+    bindTap(el, ()=> flipCard(Number(el.dataset.idx)));
+  });
+}
+
+function flipCard(idx){
+  if(locked) return;
+  const card = cards[idx];
+  if(card.matched || flippedIdx.includes(idx)) return;
+
+  flippedIdx.push(idx);
+  const el = memGridEl.querySelector(`.memcard[data-idx="${idx}"]`);
+  el.classList.add('flipped');
+
+  if(flippedIdx.length === 2){
+    locked = true;
+    const [a,b] = flippedIdx;
+    if(cards[a].icon === cards[b].icon){
+      cards[a].matched = true;
+      cards[b].matched = true;
+      matchedCount++;
+      setTimeout(()=>{
+        renderGrid();
+        flippedIdx = [];
+        locked = false;
+        onMatchFound();
+      }, 350);
+    } else {
+      setTimeout(()=>{
+        const elA = memGridEl.querySelector(`.memcard[data-idx="${a}"]`);
+        const elB = memGridEl.querySelector(`.memcard[data-idx="${b}"]`);
+        if(elA) elA.classList.remove('flipped');
+        if(elB) elB.classList.remove('flipped');
+        flippedIdx = [];
+        locked = false;
+        onMissedMatch();
+      }, 800);
+    }
+  }
+}
+
+function onMatchFound(){
+  if(mode === 'solo'){
+    soloPairsEl.textContent = `${matchedCount}/${totalPairs}`;
+    checkSoloEnd();
+  } else {
+    if(duelTurn === 1){ p1Score++; } else { p2Score++; }
+    updateDuelUI();
+    checkDuelEnd();
+    // trouver une paire = rejoue (règle classique)
+  }
+}
+function onMissedMatch(){
+  if(mode === 'solo'){
+    soloMoves++;
+    soloMovesEl.textContent = soloMoves;
+  } else {
+    duelTurn = duelTurn === 1 ? 2 : 1;
+    updateDuelUI();
+  }
+}
+
+function updateDuelUI(){
+  p1ScoreNum.textContent = p1Score;
+  p2ScoreNum.textContent = p2Score;
+  p1ScoreEl.classList.toggle('active', duelTurn===1);
+  p2ScoreEl.classList.toggle('active', duelTurn===2);
+}
+
+function checkSoloEnd(){
+  if(matchedCount < totalPairs) return;
+  const reward = Math.max(8, 30 - soloMoves);
+  addCoins(reward);
+  document.getElementById('resultTitle').textContent = 'Bravo! 🎉';
+  document.getElementById('resultText').textContent = `Toutes les paires trouvées en ${soloMoves} essais! +${reward} pièces`;
+  document.getElementById('overlay').classList.add('show');
+}
+function checkDuelEnd(){
+  if(matchedCount < totalPairs) return;
+  const winner = p1Score > p2Score ? 'Joueur 1' : (p2Score > p1Score ? 'Joueur 2' : null);
+  addCoins(15);
+  document.getElementById('resultTitle').textContent = winner ? `${winner} gagne! 🎉` : 'Égalité!';
+  document.getElementById('resultText').textContent = `${p1Score} — ${p2Score}. +15 pièces pour la partie.`;
+  document.getElementById('overlay').classList.add('show');
+}
+
+document.getElementById('playAgainBtn').addEventListener('click', ()=>{
+  document.getElementById('overlay').classList.remove('show');
+  startGame();
+});
+document.getElementById('newSoloBtn').addEventListener('click', startGame);
+document.getElementById('newDuelBtn').addEventListener('click', startGame);
+
+startGame();
+</script>
+</body>
+</html>
