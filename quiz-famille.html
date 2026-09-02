@@ -91,6 +91,17 @@
   .leaderrow .lscore{font-weight:800;color:var(--or);}
 
   .waitingdots{text-align:center;padding:30px 16px;color:var(--texte-att);}
+
+  .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .cattile{background:var(--acier);border:2px solid transparent;border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--texte-att);}
+  .cattile.active{border-color:var(--or);color:var(--glace);background:rgba(241,196,15,0.1);}
+  .cattile .caticon{font-size:20px;display:block;margin-bottom:4px;}
+
+  .readaloud-toggle{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px;color:var(--texte-att);text-align:left;}
+  .readaloud-toggle input{width:18px;height:18px;accent-color:var(--rouge);flex-shrink:0;}
+
+  .speakbtn{background:none;border:none;color:var(--or);font-size:22px;cursor:pointer;padding:4px;}
+  .speakbtn:active{transform:scale(0.9);}
 </style>
 </head>
 <body>
@@ -111,6 +122,10 @@
       <h2>Jouer en famille</h2>
       <p class="sub">Une personne crée la partie (l'hôte), les autres rejoignent avec le code.</p>
       <input type="text" id="nameInput" placeholder="Ton prénom">
+      <label class="readaloud-toggle" style="margin-top:0;margin-bottom:14px;">
+        <input type="checkbox" id="youngChildToggle">
+        <span>C'est un enfant plus jeune (recevra les questions en premier, avec une longueur d'avance)</span>
+      </label>
       <button class="btn btn-primary" id="createBtn" style="width:100%;margin-bottom:14px;">Créer une partie (hôte)</button>
       <div class="centerline" style="max-width:100%;margin:6px 0 14px;"></div>
       <div style="display:flex;gap:8px;">
@@ -127,18 +142,59 @@
       <p class="sub">Code de la partie :</p>
       <div class="roomcode" id="roomCodeDisplay">----</div>
       <div class="playerlist" id="waitingPlayerList"></div>
-      <button class="btn btn-primary" id="startBtn" style="width:100%;margin-top:16px;display:none;">Démarrer la partie</button>
-      <p class="sub" id="waitingForHostText" style="margin-top:16px;display:none;">En attente que l'hôte démarre la partie…</p>
+    </section>
+
+    <section class="panel" id="hostConfigPanel" style="display:none;">
+      <h2>Catégories</h2>
+      <p class="sub">Choisis un ou plusieurs thèmes, ou laisse « Toutes » pour un mélange.</p>
+      <div class="catgrid" id="catGrid"></div>
+
+      <h2 style="margin-top:18px;">Difficulté</h2>
+      <div class="tabs" style="padding:0;margin-top:0;">
+        <button class="tabbtn diffbtn active" data-diff="mixte">Mélange</button>
+        <button class="tabbtn diffbtn" data-diff="facile">Facile</button>
+        <button class="tabbtn diffbtn" data-diff="normal">Normal</button>
+        <button class="tabbtn diffbtn" data-diff="difficile">Difficile</button>
+      </div>
+
+      <label class="readaloud-toggle">
+        <input type="checkbox" id="readAloudToggle">
+        <span>Lire les questions à voix haute (pour un enfant qui ne lit pas encore)</span>
+      </label>
+
+      <div id="headstartConfig" style="display:none;margin-top:18px;">
+        <h2>Longueur d'avance pour les plus jeunes</h2>
+        <p class="sub">Le temps qu'ils ont pour se faire lire la question avant que les autres la voient.</p>
+        <div class="tabs" style="padding:0;margin-top:0;">
+          <button class="tabbtn hsbtn" data-hs="0">Aucune</button>
+          <button class="tabbtn hsbtn active" data-hs="5">5 s</button>
+          <button class="tabbtn hsbtn" data-hs="8">8 s</button>
+          <button class="tabbtn hsbtn" data-hs="12">12 s</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="startBtn" style="width:100%;margin-top:16px;">Démarrer la partie</button>
+    </section>
+
+    <section class="panel" style="text-align:center;">
+      <p class="sub" id="waitingForHostText" style="display:none;margin:0;">En attente que l'hôte démarre la partie…</p>
       <button class="btn btn-ghost" id="leaveLobbyBtn" style="margin-top:10px;">Quitter</button>
     </section>
   </div>
 
   <div id="questionView" style="display:none;">
-    <div class="qcounter" id="qCounter">Question 1/24</div>
-    <div class="qtext" id="qText">…</div>
-    <div class="timerbar"><div class="timerfill" id="timerFill" style="width:100%;"></div></div>
-    <div class="answers" id="answersGrid"></div>
-    <div id="answeredWait" class="waitingdots" style="display:none;">En attente des autres joueurs…</div>
+    <div id="headstartWait" class="waitingdots" style="display:none;">
+      <div style="font-size:32px;margin-bottom:8px;">🐣</div>
+      <p id="headstartText">Un instant… un joueur plus jeune répond en premier.</p>
+    </div>
+    <div id="questionContent">
+      <div class="qcounter" id="qCounter">Question 1/24</div>
+      <div class="qtext" id="qText">…</div>
+      <div style="text-align:center;"><button class="speakbtn" id="speakBtn">🔊</button></div>
+      <div class="timerbar"><div class="timerfill" id="timerFill" style="width:100%;"></div></div>
+      <div class="answers" id="answersGrid"></div>
+      <div id="answeredWait" class="waitingdots" style="display:none;">En attente des autres joueurs…</div>
+    </div>
   </div>
 
   <div id="resultView" style="display:none;">
@@ -162,31 +218,75 @@
 </div>
 
 <script>
+const CATEGORIES = {
+  general:  {label:'Général',    icon:'🌟'},
+  animaux:  {label:'Animaux',    icon:'🐾'},
+  geo:      {label:'Géographie', icon:'🌍'},
+  sciences: {label:'Sciences',   icon:'🔬'},
+  sport:    {label:'Sport',      icon:'⚽'},
+  musique:  {label:'Musique',    icon:'🎵'},
+  cinema:   {label:'Cinéma',     icon:'🎬'}
+};
+
 const QUESTIONS = [
-  {q:"Quelle est la capitale du Canada?", a:["Toronto","Ottawa","Montréal","Vancouver"], correct:1},
-  {q:"Combien de pattes a une araignée?", a:["6","8","10","4"], correct:1},
-  {q:"Quelle planète est la plus proche du soleil?", a:["Vénus","Terre","Mercure","Mars"], correct:2},
-  {q:"Quel est le plus grand océan du monde?", a:["Atlantique","Indien","Arctique","Pacifique"], correct:3},
-  {q:"Combien de continents y a-t-il sur Terre?", a:["5","6","7","8"], correct:2},
-  {q:"Quel animal est le roi de la jungle?", a:["Tigre","Lion","Éléphant","Gorille"], correct:1},
-  {q:"Quelle couleur obtient-on en mélangeant le bleu et le jaune?", a:["Violet","Orange","Vert","Rouge"], correct:2},
-  {q:"Combien de joueurs sur le terrain dans une équipe de soccer?", a:["9","10","11","12"], correct:2},
-  {q:"Quel est le plus long fleuve du monde?", a:["Amazone","Nil","Mississippi","Yangtsé"], correct:1},
-  {q:"Quelle est la plus haute montagne du monde?", a:["Kilimandjaro","Mont Blanc","Everest","K2"], correct:2},
-  {q:"Combien de couleurs dans un arc-en-ciel?", a:["5","6","7","8"], correct:2},
-  {q:"Quel organe pompe le sang dans le corps?", a:["Poumon","Cœur","Foie","Rein"], correct:1},
-  {q:"Quelle est la langue la plus parlée au monde?", a:["Anglais","Espagnol","Mandarin","Français"], correct:2},
-  {q:"Combien font 7 x 8?", a:["54","56","58","64"], correct:1},
-  {q:"Quel est le plus petit pays du monde?", a:["Monaco","Vatican","Saint-Marin","Liechtenstein"], correct:1},
-  {q:"Quel animal change de couleur pour se camoufler?", a:["Grenouille","Caméléon","Serpent","Tortue"], correct:1},
-  {q:"Combien de temps la Terre met-elle à faire le tour du soleil?", a:["1 jour","1 mois","1 an","10 ans"], correct:2},
-  {q:"Quel est le symbole chimique de l'eau?", a:["O2","H2O","CO2","NaCl"], correct:1},
-  {q:"Quelle est la capitale de la France?", a:["Lyon","Marseille","Paris","Nice"], correct:2},
-  {q:"Combien de dents a un adulte en moyenne?", a:["28","30","32","34"], correct:2},
-  {q:"Quel est le plus grand mammifère du monde?", a:["Éléphant","Girafe","Baleine bleue","Rhinocéros"], correct:2},
-  {q:"Combien de côtés a un hexagone?", a:["5","6","7","8"], correct:1},
-  {q:"Quelle saison vient après l'hiver?", a:["Été","Automne","Printemps","Aucune"], correct:2},
-  {q:"Quel est le sport d'hiver le plus populaire au Canada?", a:["Soccer","Hockey","Basketball","Baseball"], correct:1}
+  // Général
+  {q:"Quelle couleur obtient-on en mélangeant le bleu et le jaune?", a:["Violet","Orange","Vert","Rouge"], correct:2, category:'general', difficulty:'facile'},
+  {q:"Quelle est la langue la plus parlée au monde?", a:["Anglais","Espagnol","Mandarin","Français"], correct:2, category:'general', difficulty:'normal'},
+  {q:"Combien de dents a un adulte en moyenne?", a:["28","30","32","34"], correct:2, category:'general', difficulty:'difficile'},
+  {q:"Quelle saison vient après l'hiver?", a:["Été","Automne","Printemps","Aucune"], correct:2, category:'general', difficulty:'facile'},
+  {q:"Combien font 7 x 8?", a:["54","56","58","64"], correct:1, category:'general', difficulty:'normal'},
+  {q:"Combien de côtés a un hexagone?", a:["5","6","7","8"], correct:1, category:'general', difficulty:'normal'},
+
+  // Animaux
+  {q:"Combien de pattes a une araignée?", a:["6","8","10","4"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel animal est le roi de la jungle?", a:["Tigre","Lion","Éléphant","Gorille"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel animal change de couleur pour se camoufler?", a:["Grenouille","Caméléon","Serpent","Tortue"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel est le plus grand mammifère du monde?", a:["Éléphant","Girafe","Baleine bleue","Rhinocéros"], correct:2, category:'animaux', difficulty:'normal'},
+  {q:"Combien de cœurs a une pieuvre?", a:["1","2","3","4"], correct:2, category:'animaux', difficulty:'difficile'},
+  {q:"Quel est l'animal terrestre le plus rapide?", a:["Lion","Guépard","Cheval","Gazelle"], correct:1, category:'animaux', difficulty:'normal'},
+
+  // Géographie
+  {q:"Quelle est la capitale du Canada?", a:["Toronto","Ottawa","Montréal","Vancouver"], correct:1, category:'geo', difficulty:'facile'},
+  {q:"Quel est le plus grand océan du monde?", a:["Atlantique","Indien","Arctique","Pacifique"], correct:3, category:'geo', difficulty:'normal'},
+  {q:"Combien de continents y a-t-il sur Terre?", a:["5","6","7","8"], correct:2, category:'geo', difficulty:'facile'},
+  {q:"Quel est le plus long fleuve du monde?", a:["Amazone","Nil","Mississippi","Yangtsé"], correct:1, category:'geo', difficulty:'difficile'},
+  {q:"Quelle est la plus haute montagne du monde?", a:["Kilimandjaro","Mont Blanc","Everest","K2"], correct:2, category:'geo', difficulty:'normal'},
+  {q:"Quel est le plus petit pays du monde?", a:["Monaco","Vatican","Saint-Marin","Liechtenstein"], correct:1, category:'geo', difficulty:'difficile'},
+  {q:"Quelle est la capitale de la France?", a:["Lyon","Marseille","Paris","Nice"], correct:2, category:'geo', difficulty:'facile'},
+
+  // Sciences
+  {q:"Quelle planète est la plus proche du soleil?", a:["Vénus","Terre","Mercure","Mars"], correct:2, category:'sciences', difficulty:'normal'},
+  {q:"Combien de couleurs dans un arc-en-ciel?", a:["5","6","7","8"], correct:2, category:'sciences', difficulty:'facile'},
+  {q:"Quel organe pompe le sang dans le corps?", a:["Poumon","Cœur","Foie","Rein"], correct:1, category:'sciences', difficulty:'normal'},
+  {q:"Combien de temps la Terre met-elle à faire le tour du soleil?", a:["1 jour","1 mois","1 an","10 ans"], correct:2, category:'sciences', difficulty:'facile'},
+  {q:"Quel est le symbole chimique de l'eau?", a:["O2","H2O","CO2","NaCl"], correct:1, category:'sciences', difficulty:'facile'},
+  {q:"Combien d'os y a-t-il dans le corps humain adulte?", a:["106","156","206","256"], correct:2, category:'sciences', difficulty:'difficile'},
+
+  // Sport
+  {q:"Quel est le sport d'hiver le plus populaire au Canada?", a:["Soccer","Hockey","Basketball","Baseball"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Combien de joueurs sur le terrain dans une équipe de soccer?", a:["9","10","11","12"], correct:2, category:'sport', difficulty:'facile'},
+  {q:"Combien de joueurs par équipe sur la glace au hockey (gardien inclus)?", a:["5","6","7","8"], correct:1, category:'sport', difficulty:'normal'},
+  {q:"Combien de périodes y a-t-il dans un match de hockey?", a:["2","3","4","5"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Quel trophée remporte l'équipe championne de la LNH?", a:["Coupe Stanley","Coupe Grey","Coupe du Monde","Trophée Hart"], correct:0, category:'sport', difficulty:'normal'},
+  {q:"Combien de buts faut-il marquer pour un « tour du chapeau »?", a:["2","3","4","5"], correct:1, category:'sport', difficulty:'normal'},
+  {q:"Combien de joueurs dans une équipe de basketball sur le terrain?", a:["4","5","6","7"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Quel sport se joue avec une raquette, un filet, en simple ou en double?", a:["Badminton","Tennis","Golf","Hockey"], correct:1, category:'sport', difficulty:'facile'},
+
+  // Musique
+  {q:"Combien de cordes a une guitare classique?", a:["4","5","6","7"], correct:2, category:'musique', difficulty:'facile'},
+  {q:"Quel instrument a des touches noires et blanches?", a:["Violon","Piano","Flûte","Batterie"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Comment appelle-t-on un groupe de deux musiciens?", a:["Solo","Duo","Trio","Quatuor"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Quel est l'instrument principal d'un orchestre à cordes?", a:["Violon","Trompette","Piano","Tambour"], correct:0, category:'musique', difficulty:'normal'},
+  {q:"Comment appelle-t-on la voix la plus aiguë chez les femmes en chant classique?", a:["Alto","Soprano","Ténor","Basse"], correct:1, category:'musique', difficulty:'difficile'},
+  {q:"Quel instrument souffle-t-on et a des touches comme un piano?", a:["Trompette","Accordéon","Violon","Tambour"], correct:1, category:'musique', difficulty:'normal'},
+
+  // Cinéma
+  {q:"Comment appelle-t-on la personne qui réalise un film?", a:["Acteur","Producteur","Réalisateur","Monteur"], correct:2, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on un film qui fait rire?", a:["Drame","Comédie","Documentaire","Thriller"], correct:1, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on un film entièrement dessiné ou en images de synthèse?", a:["Film muet","Film d'animation","Court métrage","Documentaire"], correct:1, category:'cinema', difficulty:'facile'},
+  {q:"Quel prix récompense chaque année les meilleurs films à Hollywood?", a:["Grammy","Oscar","Emmy","Tony"], correct:1, category:'cinema', difficulty:'normal'},
+  {q:"Comment appelle-t-on la personne qui joue un rôle dans un film?", a:["Réalisateur","Scénariste","Acteur","Monteur"], correct:2, category:'cinema', difficulty:'facile'},
+  {q:"Environ combien de temps dure un long métrage typique?", a:["20 minutes","2 heures","10 heures","1 semaine"], correct:1, category:'cinema', difficulty:'normal'}
 ];
 const QUESTION_TIME_MS = 12000;
 
@@ -263,20 +363,25 @@ let roomData = null;
 let myQuizOrder = [];
 let hasAnsweredCurrent = false;
 let questionTimer = null;
+let myIsYoungChild = false;
+let selectedHeadstartSeconds = 5;
+let myRevealTime = 0;
+let headstartTimer = null;
 
 document.getElementById('createBtn').addEventListener('click', ()=>{
   myName = document.getElementById('nameInput').value.trim() || 'Hôte';
+  myIsYoungChild = document.getElementById('youngChildToggle').checked;
   myPlayerId = genPlayerId();
   myRoomCode = genCode();
   amHost = true;
-  const order = shuffle(QUESTIONS.map((_,i)=>i)).slice(0, 12);
   fbDb.ref(ROOM_PREFIX + myRoomCode).set({
     status: 'lobby',
     hostId: myPlayerId,
     currentQuestion: 0,
     questionStartedAt: 0,
-    questionOrder: order,
-    players: { [myPlayerId]: { name: myName, score: 0 } },
+    questionOrder: [],
+    headStartMs: 0,
+    players: { [myPlayerId]: { name: myName, score: 0, isYoungChild: myIsYoungChild } },
     createdAt: firebase.database.ServerValue.TIMESTAMP
   }).then(()=>{
     document.getElementById('roomCodeDisplay').textContent = myRoomCode;
@@ -287,6 +392,7 @@ document.getElementById('createBtn').addEventListener('click', ()=>{
 document.getElementById('joinBtn').addEventListener('click', ()=>{
   const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
   myName = document.getElementById('nameInput').value.trim() || 'Joueur';
+  myIsYoungChild = document.getElementById('youngChildToggle').checked;
   const err = document.getElementById('lobbyError');
   err.style.display = 'none';
   if(code.length !== 4){ err.textContent = 'Entre le code à 4 lettres.'; err.style.display = 'block'; return; }
@@ -298,7 +404,7 @@ document.getElementById('joinBtn').addEventListener('click', ()=>{
     if(data.status !== 'lobby'){ err.textContent = 'Cette partie est déjà commencée.'; err.style.display = 'block'; return; }
     myRoomCode = code;
     amHost = false;
-    ref.child('players/' + myPlayerId).set({ name: myName, score: 0 }).then(()=>{ attachListener(); });
+    ref.child('players/' + myPlayerId).set({ name: myName, score: 0, isYoungChild: myIsYoungChild }).then(()=>{ attachListener(); });
   }).catch(()=>{ err.textContent = 'Impossible de rejoindre.'; err.style.display = 'block'; });
 });
 
@@ -324,31 +430,125 @@ function renderLobby(){
   const list = document.getElementById('waitingPlayerList');
   list.innerHTML = Object.entries(players).map(([pid,p])=>`
     <div class="playerrow">
-      <span class="pname">${p.name}${pid===roomData.hostId?'<span class="hostbadge">HÔTE</span>':''}</span>
+      <span class="pname">${p.name}${pid===roomData.hostId?'<span class="hostbadge">HÔTE</span>':''}${p.isYoungChild?' 🐣':''}</span>
     </div>`).join('');
-  document.getElementById('startBtn').style.display = amHost ? '' : 'none';
+  document.getElementById('hostConfigPanel').style.display = amHost ? '' : 'none';
   document.getElementById('waitingForHostText').style.display = amHost ? 'none' : '';
+  const anyYoungChild = Object.values(players).some(p=>p.isYoungChild);
+  document.getElementById('headstartConfig').style.display = (amHost && anyYoungChild) ? '' : 'none';
+  if(amHost) renderCategoryGrid();
 }
+
+document.querySelectorAll('.hsbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    selectedHeadstartSeconds = Number(btn.dataset.hs);
+    document.querySelectorAll('.hsbtn').forEach(b=>b.classList.toggle('active', b===btn));
+  });
+});
+
+let selectedCategories = new Set(Object.keys(CATEGORIES));
+let selectedDifficulty = 'mixte';
+let readAloudEnabled = false;
+
+function renderCategoryGrid(){
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = Object.entries(CATEGORIES).map(([key,c])=>`
+    <div class="cattile ${selectedCategories.has(key)?'active':''}" data-cat="${key}">
+      <span class="caticon">${c.icon}</span>${c.label}
+    </div>`).join('');
+  grid.querySelectorAll('.cattile').forEach(el=>{
+    bindTap(el, ()=>{
+      const key = el.dataset.cat;
+      if(selectedCategories.has(key)){
+        if(selectedCategories.size > 1) selectedCategories.delete(key);
+      } else {
+        selectedCategories.add(key);
+      }
+      renderCategoryGrid();
+    });
+  });
+}
+
+document.querySelectorAll('.diffbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    selectedDifficulty = btn.dataset.diff;
+    document.querySelectorAll('.diffbtn').forEach(b=>b.classList.toggle('active', b===btn));
+  });
+});
+
+document.getElementById('readAloudToggle').addEventListener('change', function(){
+  readAloudEnabled = this.checked;
+});
+
+function speakText(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'fr-CA';
+    utter.rate = 0.95;
+    speechSynthesis.speak(utter);
+  }catch(e){}
+}
+document.getElementById('speakBtn').addEventListener('click', ()=>{
+  const qi = roomData.currentQuestion;
+  const q = QUESTIONS[roomData.questionOrder[qi]];
+  if(q) speakText(`${q.q} Les choix sont : ${q.a.join(', ')}`);
+});
 
 document.getElementById('startBtn').addEventListener('click', ()=>{
   if(!amHost) return;
-  roomRef.update({ status:'playing', currentQuestion:0, questionStartedAt: Date.now() });
+  const pool = QUESTIONS
+    .map((q,i)=>({q,i}))
+    .filter(({q})=> selectedCategories.has(q.category) && (selectedDifficulty==='mixte' || q.difficulty===selectedDifficulty));
+  const indices = pool.length ? pool.map(p=>p.i) : QUESTIONS.map((_,i)=>i);
+  const order = shuffle(indices).slice(0, Math.min(12, indices.length));
+  const players = roomData.players || {};
+  const anyYoungChild = Object.values(players).some(p=>p.isYoungChild);
+  const headStartMs = anyYoungChild ? selectedHeadstartSeconds * 1000 : 0;
+  roomRef.update({ status:'playing', currentQuestion:0, questionStartedAt: Date.now(), questionOrder: order, headStartMs });
 });
 document.getElementById('leaveLobbyBtn').addEventListener('click', leaveRoom);
 
 let lastRenderedQuestion = -1;
+let lastRevealedQuestion = -1;
 function renderQuestion(){
   const qi = roomData.currentQuestion;
   if(qi !== lastRenderedQuestion){
     lastRenderedQuestion = qi;
     hasAnsweredCurrent = false;
     document.getElementById('answeredWait').style.display = 'none';
+    clearTimeout(headstartTimer);
+    const baseStart = roomData.questionStartedAt || Date.now();
+    const delay = myIsYoungChild ? 0 : (roomData.headStartMs || 0);
+    myRevealTime = baseStart + delay;
   }
+
   showView('question');
+  const now = Date.now();
+  if(now < myRevealTime){
+    document.getElementById('headstartWait').style.display = 'block';
+    document.getElementById('questionContent').style.display = 'none';
+    document.getElementById('headstartText').textContent = myIsYoungChild
+      ? "C'est ton tour de voir la question en premier!"
+      : "Un instant… un joueur plus jeune répond en premier.";
+    clearTimeout(headstartTimer);
+    headstartTimer = setTimeout(renderQuestion, Math.max(50, myRevealTime - now + 30));
+    return;
+  }
+
+  document.getElementById('headstartWait').style.display = 'none';
+  document.getElementById('questionContent').style.display = '';
+
   const total = (roomData.questionOrder && roomData.questionOrder.length) || QUESTIONS.length;
   const q = QUESTIONS[roomData.questionOrder[qi]];
   document.getElementById('qCounter').textContent = `Question ${qi+1}/${total}`;
   document.getElementById('qText').textContent = q.q;
+
+  if(qi !== lastRevealedQuestion){
+    lastRevealedQuestion = qi;
+    if(readAloudEnabled) speakText(`${q.q} Les choix sont : ${q.a.join(', ')}`);
+  }
 
   if(!hasAnsweredCurrent){
     const grid = document.getElementById('answersGrid');
@@ -366,7 +566,7 @@ function renderQuestion(){
 function startTimer(q){
   clearInterval(questionTimer);
   const fill = document.getElementById('timerFill');
-  const startedAt = roomData.questionStartedAt || Date.now();
+  const startedAt = myRevealTime || Date.now();
   questionTimer = setInterval(()=>{
     const elapsed = Date.now() - startedAt;
     const pct = Math.max(0, 100 - (elapsed / QUESTION_TIME_MS) * 100);
@@ -382,7 +582,7 @@ function submitAnswer(choiceIdx, q){
   if(hasAnsweredCurrent) return;
   hasAnsweredCurrent = true;
   clearInterval(questionTimer);
-  const elapsed = Date.now() - (roomData.questionStartedAt || Date.now());
+  const elapsed = Date.now() - (myRevealTime || Date.now());
   const correct = choiceIdx === q.correct;
   let points = 0;
   if(correct){
@@ -464,6 +664,9 @@ function leaveRoom(){
   if(amHost && roomRef) roomRef.remove();
   roomRef = null; roomData = null; myRoomCode = null; myPlayerId = null; amHost = false;
   lastRenderedQuestion = -1;
+  lastRevealedQuestion = -1;
+  clearTimeout(headstartTimer);
+  myRevealTime = 0;
   document.getElementById('lobbyError').style.display = 'none';
   document.getElementById('joinCodeInput').value = '';
   showView('lobby');
