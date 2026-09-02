@@ -290,7 +290,91 @@ const QUESTIONS = [
   {q:"Comment appelle-t-on un film entièrement dessiné ou en images de synthèse?", a:["Film muet","Film d'animation","Court métrage","Documentaire"], correct:1, category:'cinema', difficulty:'facile'},
   {q:"Quel prix récompense chaque année les meilleurs films à Hollywood?", a:["Grammy","Oscar","Emmy","Tony"], correct:1, category:'cinema', difficulty:'normal'},
   {q:"Comment appelle-t-on la personne qui joue un rôle dans un film?", a:["Réalisateur","Scénariste","Acteur","Monteur"], correct:2, category:'cinema', difficulty:'facile'},
-  {q:"Environ combien de temps dure un long métrage typique?", a:["20 minutes","2 heures","10 heures","1 semaine"], correct:1, category:'cinema', difficulty:'normal'}
+  {q:"Environ combien de temps dure un long métrage typique?", a:["20 minutes","2 heures","10 heures","1 semaine"], correct:1, category:'cinema', difficulty:'normal'},
+
+  // Général (nouvelles)
+  {q:"Combien de jours y a-t-il dans une année bissextile?", a:["364","365","366","367"], correct:2, category:'general', difficulty:'normal'},
+  {q:"Combien de minutes y a-t-il dans une heure?", a:["50","60","70","100"], correct:1, category:'general', difficulty:'facile'},
+  {q:"Quel jour vient après mercredi?", a:["Jeudi","Vendredi","Mardi","Lundi"], correct:0, category:'general', difficulty:'facile'},
+  {q:"Combien de mois y a-t-il dans une année?", a:["10","11","12","13"], correct:2, category:'general', difficulty:'facile'},
+  {q:"Quelle est la monnaie utilisée au Canada?", a:["Euro","Dollar","Livre","Peso"], correct:1, category:'general', difficulty:'facile'},
+  {q:"Combien font 9 x 9?", a:["72","81","90","99"], correct:1, category:'general', difficulty:'normal'},
+  {q:"Quel est le contraire de « chaud »?", a:["Tiède","Froid","Sec","Humide"], correct:1, category:'general', difficulty:'facile'},
+  {q:"Combien de lettres y a-t-il dans l'alphabet français?", a:["24","25","26","27"], correct:2, category:'general', difficulty:'normal'},
+  {q:"Quel repas mange-t-on le matin?", a:["Dîner","Souper","Déjeuner","Collation"], correct:2, category:'general', difficulty:'facile'},
+  {q:"Combien de côtés a un triangle?", a:["2","3","4","5"], correct:1, category:'general', difficulty:'facile'},
+
+  // Animaux (nouvelles)
+  {q:"Combien de pattes a un insecte?", a:["4","6","8","10"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel est le seul mammifère capable de voler?", a:["Écureuil volant","Chauve-souris","Autruche","Pingouin"], correct:1, category:'animaux', difficulty:'normal'},
+  {q:"Comment appelle-t-on le petit du chat?", a:["Chiot","Chaton","Poulain","Agneau"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel animal est surnommé le meilleur ami de l'humain?", a:["Chat","Chien","Cheval","Lapin"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel oiseau ne peut pas voler mais nage très bien?", a:["Aigle","Pingouin","Corbeau","Hibou"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel animal a un très long cou pour manger les feuilles des arbres?", a:["Éléphant","Girafe","Zèbre","Chameau"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Comment appelle-t-on un groupe de loups?", a:["Troupeau","Meute","Bande","Colonie"], correct:1, category:'animaux', difficulty:'difficile'},
+  {q:"Combien de bosses a un dromadaire?", a:["0","1","2","3"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Quel insecte produit du miel?", a:["Fourmi","Abeille","Papillon","Coccinelle"], correct:1, category:'animaux', difficulty:'facile'},
+  {q:"Combien de temps un ours passe-t-il en hibernation, environ?", a:["1 semaine","1 mois","Plusieurs mois","1 jour"], correct:2, category:'animaux', difficulty:'normal'},
+
+  // Géographie (nouvelles)
+  {q:"Sur quel continent se trouve l'Égypte?", a:["Asie","Afrique","Europe","Amérique du Sud"], correct:1, category:'geo', difficulty:'facile'},
+  {q:"Quelle est la capitale de l'Italie?", a:["Milan","Venise","Rome","Naples"], correct:2, category:'geo', difficulty:'facile'},
+  {q:"Quel pays a la forme d'une botte?", a:["Espagne","Italie","Grèce","Portugal"], correct:1, category:'geo', difficulty:'facile'},
+  {q:"Quelle est la plus grande province du Canada (par superficie)?", a:["Ontario","Québec","Alberta","Colombie-Britannique"], correct:1, category:'geo', difficulty:'normal'},
+  {q:"Quel est le plus grand désert chaud du monde?", a:["Sahara","Gobi","Kalahari","Mojave"], correct:0, category:'geo', difficulty:'normal'},
+  {q:"Quelle ville est surnommée la Ville Lumière?", a:["Londres","New York","Paris","Rome"], correct:2, category:'geo', difficulty:'normal'},
+  {q:"Quel pays compte le plus d'habitants au monde aujourd'hui?", a:["Chine","Inde","États-Unis","Russie"], correct:1, category:'geo', difficulty:'difficile'},
+  {q:"Quel océan borde l'est du Canada?", a:["Pacifique","Atlantique","Arctique","Indien"], correct:1, category:'geo', difficulty:'facile'},
+  {q:"Quelle est la plus longue chaîne de montagnes terrestre du monde?", a:["Rocheuses","Alpes","Andes","Himalaya"], correct:2, category:'geo', difficulty:'difficile'},
+  {q:"Quelle mer ou quel océan borde la Californie?", a:["Atlantique","Pacifique","Méditerranée","Mer Rouge"], correct:1, category:'geo', difficulty:'normal'},
+
+  // Sciences (nouvelles)
+  {q:"Combien de sens le corps humain possède-t-il généralement?", a:["3","4","5","6"], correct:2, category:'sciences', difficulty:'facile'},
+  {q:"Quel gaz les humains respirent-ils pour vivre?", a:["Azote","Oxygène","Hydrogène","CO2"], correct:1, category:'sciences', difficulty:'facile'},
+  {q:"Quelle partie du corps sert à voir?", a:["Oreille","Nez","Œil","Peau"], correct:2, category:'sciences', difficulty:'facile'},
+  {q:"Combien de temps dure environ une journée sur Terre?", a:["12 heures","24 heures","48 heures","365 jours"], correct:1, category:'sciences', difficulty:'facile'},
+  {q:"Quel est l'état de l'eau quand elle gèle?", a:["Liquide","Gazeux","Solide","Plasma"], correct:2, category:'sciences', difficulty:'facile'},
+  {q:"Quelle planète est surnommée la planète rouge?", a:["Vénus","Mars","Jupiter","Saturne"], correct:1, category:'sciences', difficulty:'facile'},
+  {q:"Combien de temps met la lumière du soleil pour atteindre la Terre, environ?", a:["8 secondes","8 minutes","8 heures","8 jours"], correct:1, category:'sciences', difficulty:'difficile'},
+  {q:"Quel organe permet de penser et de contrôler le corps?", a:["Cœur","Cerveau","Poumon","Estomac"], correct:1, category:'sciences', difficulty:'facile'},
+  {q:"Quelle force nous garde au sol?", a:["Le vent","La gravité","Le magnétisme","La pression"], correct:1, category:'sciences', difficulty:'normal'},
+  {q:"Combien de planètes y a-t-il dans le système solaire?", a:["7","8","9","10"], correct:1, category:'sciences', difficulty:'normal'},
+
+  // Sport (nouvelles)
+  {q:"Combien de joueurs y a-t-il dans une équipe de volleyball sur le terrain?", a:["4","5","6","7"], correct:2, category:'sport', difficulty:'normal'},
+  {q:"Tous les combien d'années ont lieu les Jeux olympiques d'été?", a:["2 ans","4 ans","6 ans","8 ans"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Dans quel sport utilise-t-on un filet, une raquette et un volant?", a:["Tennis","Badminton","Squash","Ping-pong"], correct:1, category:'sport', difficulty:'normal'},
+  {q:"Combien de points vaut généralement un panier au basketball?", a:["1","2","3","4"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Combien de trous y a-t-il sur un parcours de golf complet?", a:["9","12","18","24"], correct:2, category:'sport', difficulty:'normal'},
+  {q:"Dans quel sport porte-t-on une ceinture de couleur selon son niveau?", a:["Boxe","Judo","Escrime","Natation"], correct:1, category:'sport', difficulty:'normal'},
+  {q:"Un marathon fait environ combien de kilomètres?", a:["21 km","32 km","42 km","50 km"], correct:2, category:'sport', difficulty:'difficile'},
+  {q:"Quel sport se joue sur une table avec des raquettes et une petite balle?", a:["Squash","Tennis de table","Billard","Fléchettes"], correct:1, category:'sport', difficulty:'facile'},
+  {q:"Combien de bases y a-t-il au baseball, sans compter le marbre?", a:["2","3","4","5"], correct:1, category:'sport', difficulty:'normal'},
+  {q:"Quel sport se pratique sur une planche, sur l'eau ou sur la neige?", a:["Golf","Planche à neige ou surf","Tennis","Escrime"], correct:1, category:'sport', difficulty:'facile'},
+
+  // Musique (nouvelles)
+  {q:"Combien de touches y a-t-il sur un piano standard?", a:["76","88","96","108"], correct:1, category:'musique', difficulty:'difficile'},
+  {q:"Quel instrument à percussion frappe-t-on avec des baguettes?", a:["Guitare","Batterie","Flûte","Violon"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Comment appelle-t-on la personne qui dirige un orchestre?", a:["Compositeur","Chef d'orchestre","Soliste","Chanteur"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Comment appelle-t-on un chanteur qui chante seul?", a:["Choriste","Soliste","Duettiste","Accompagnateur"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Quel instrument à cordes portatif accompagne souvent les chanteurs?", a:["Piano","Guitare","Tuba","Orgue"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Comment appelle-t-on un ensemble de 4 musiciens?", a:["Trio","Quatuor","Quintette","Duo"], correct:1, category:'musique', difficulty:'normal'},
+  {q:"Quel instrument à cordes se joue avec un archet?", a:["Guitare","Violon","Piano","Batterie"], correct:1, category:'musique', difficulty:'facile'},
+  {q:"Comment appelle-t-on une chanson chantée sans aucun accompagnement musical?", a:["A cappella","Instrumentale","Remix","Duo"], correct:0, category:'musique', difficulty:'difficile'},
+  {q:"Quel type de musique est né à la Nouvelle-Orléans, mêlant improvisation et instruments à vent?", a:["Jazz","Rock","Reggae","Country"], correct:0, category:'musique', difficulty:'difficile'},
+  {q:"Quel instrument à vent se joue en soufflant sur le côté?", a:["Flûte traversière","Trompette","Piano","Violon"], correct:0, category:'musique', difficulty:'normal'},
+
+  // Cinéma (nouvelles)
+  {q:"Comment appelle-t-on la musique qui accompagne un film?", a:["Bande sonore","Sous-titre","Générique","Scénario"], correct:0, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on le texte qui traduit les dialogues au bas de l'écran?", a:["Sous-titres","Doublage","Script","Légende"], correct:0, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on un film qui fait peur?", a:["Comédie","Film d'horreur","Documentaire","Drame"], correct:1, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on la personne qui écrit l'histoire d'un film?", a:["Réalisateur","Scénariste","Producteur","Cascadeur"], correct:1, category:'cinema', difficulty:'normal'},
+  {q:"Comment appelle-t-on une histoire qui se déroule avant l'histoire principale d'un film?", a:["Suite","Préquelle","Remake","Spin-off"], correct:1, category:'cinema', difficulty:'difficile'},
+  {q:"Dans quelle ville a lieu la plus grande cérémonie des Oscars chaque année?", a:["New York","Hollywood","Paris","Londres"], correct:1, category:'cinema', difficulty:'normal'},
+  {q:"Comment appelle-t-on la personne qui remplace l'acteur dans les scènes dangereuses?", a:["Cascadeur","Figurant","Assistant","Producteur"], correct:0, category:'cinema', difficulty:'facile'},
+  {q:"Comment appelle-t-on un film basé sur des faits réels et la vie d'une personne?", a:["Fiction","Film biographique","Comédie musicale","Film d'animation"], correct:1, category:'cinema', difficulty:'normal'},
+  {q:"Combien d'images par seconde utilise-t-on généralement au cinéma pour donner l'illusion du mouvement?", a:["12","24","48","60"], correct:1, category:'cinema', difficulty:'difficile'},
+  {q:"Comment appelle-t-on la toute première projection officielle d'un film?", a:["Avant-première","Générique","Bande-annonce","Casting"], correct:0, category:'cinema', difficulty:'normal'}
 ];
 const QUESTION_TIME_MS = 12000;
 
