@@ -127,7 +127,8 @@
         <span>C'est un enfant plus jeune (recevra les questions en premier, avec une longueur d'avance)</span>
       </label>
       <button class="btn btn-primary" id="createBtn" style="width:100%;margin-bottom:14px;">Créer une partie (hôte)</button>
-      <div class="centerline" style="max-width:100%;margin:6px 0 14px;"></div>
+      <button class="btn btn-ghost" id="soloBtn" style="width:100%;">Jouer en solo</button>
+      <div class="centerline" style="max-width:100%;margin:14px 0 14px;"></div>
       <div style="display:flex;gap:8px;">
         <input type="text" id="joinCodeInput" placeholder="Code à 4 lettres" maxlength="4" style="flex:1;text-transform:uppercase;margin:0;">
         <button class="btn btn-primary" id="joinBtn">Rejoindre</button>
@@ -138,8 +139,8 @@
 
   <div id="waitingView" style="display:none;">
     <section class="panel" style="text-align:center;">
-      <h2>Salle d'attente</h2>
-      <p class="sub">Code de la partie :</p>
+      <h2 id="waitingTitle">Salle d'attente</h2>
+      <p class="sub" id="roomCodeLabel">Code de la partie :</p>
       <div class="roomcode" id="roomCodeDisplay">----</div>
       <div class="playerlist" id="waitingPlayerList"></div>
     </section>
@@ -367,8 +368,28 @@ let myIsYoungChild = false;
 let selectedHeadstartSeconds = 5;
 let myRevealTime = 0;
 let headstartTimer = null;
+let isSoloMode = false;
+
+document.getElementById('soloBtn').addEventListener('click', ()=>{
+  isSoloMode = true;
+  myName = document.getElementById('nameInput').value.trim() || 'Toi';
+  myPlayerId = 'solo';
+  myRoomCode = null;
+  amHost = true;
+  roomData = {
+    status: 'lobby',
+    hostId: 'solo',
+    currentQuestion: 0,
+    questionStartedAt: 0,
+    questionOrder: [],
+    headStartMs: 0,
+    players: { solo: { name: myName, score: 0 } }
+  };
+  render();
+});
 
 document.getElementById('createBtn').addEventListener('click', ()=>{
+  isSoloMode = false;
   myName = document.getElementById('nameInput').value.trim() || 'Hôte';
   myIsYoungChild = document.getElementById('youngChildToggle').checked;
   myPlayerId = genPlayerId();
@@ -390,6 +411,7 @@ document.getElementById('createBtn').addEventListener('click', ()=>{
 });
 
 document.getElementById('joinBtn').addEventListener('click', ()=>{
+  isSoloMode = false;
   const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
   myName = document.getElementById('nameInput').value.trim() || 'Joueur';
   myIsYoungChild = document.getElementById('youngChildToggle').checked;
@@ -425,9 +447,13 @@ function render(){
 
 function renderLobby(){
   showView('waiting');
-  document.getElementById('roomCodeDisplay').textContent = myRoomCode;
+  document.getElementById('waitingTitle').textContent = isSoloMode ? 'Configuration' : "Salle d'attente";
+  document.getElementById('roomCodeLabel').style.display = isSoloMode ? 'none' : '';
+  document.getElementById('roomCodeDisplay').style.display = isSoloMode ? 'none' : '';
+  document.getElementById('roomCodeDisplay').textContent = myRoomCode || '';
   const players = roomData.players || {};
   const list = document.getElementById('waitingPlayerList');
+  list.style.display = isSoloMode ? 'none' : '';
   list.innerHTML = Object.entries(players).map(([pid,p])=>`
     <div class="playerrow">
       <span class="pname">${p.name}${pid===roomData.hostId?'<span class="hostbadge">HÔTE</span>':''}${p.isYoungChild?' 🐣':''}</span>
@@ -503,6 +529,17 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
     .filter(({q})=> selectedCategories.has(q.category) && (selectedDifficulty==='mixte' || q.difficulty===selectedDifficulty));
   const indices = pool.length ? pool.map(p=>p.i) : QUESTIONS.map((_,i)=>i);
   const order = shuffle(indices).slice(0, Math.min(12, indices.length));
+
+  if(isSoloMode){
+    roomData.status = 'playing';
+    roomData.currentQuestion = 0;
+    roomData.questionStartedAt = Date.now();
+    roomData.questionOrder = order;
+    roomData.headStartMs = 0;
+    render();
+    return;
+  }
+
   const players = roomData.players || {};
   const anyYoungChild = Object.values(players).some(p=>p.isYoungChild);
   const headStartMs = anyYoungChild ? selectedHeadstartSeconds * 1000 : 0;
@@ -596,11 +633,15 @@ function submitAnswer(choiceIdx, q){
     else if(i === choiceIdx) btn.classList.add('wrong');
   });
 
-  const myScoreRef = fbDb.ref(ROOM_PREFIX + myRoomCode + '/players/' + myPlayerId);
-  myScoreRef.get().then(snap=>{
-    const cur = (snap.val() && snap.val().score) || 0;
-    myScoreRef.update({ score: cur + points });
-  });
+  if(isSoloMode){
+    roomData.players.solo.score = (roomData.players.solo.score || 0) + points;
+  } else {
+    const myScoreRef = fbDb.ref(ROOM_PREFIX + myRoomCode + '/players/' + myPlayerId);
+    myScoreRef.get().then(snap=>{
+      const cur = (snap.val() && snap.val().score) || 0;
+      myScoreRef.update({ score: cur + points });
+    });
+  }
 
   setTimeout(()=>{
     showResultScreen(correct, points);
@@ -629,6 +670,16 @@ document.getElementById('nextBtn').addEventListener('click', ()=>{
   if(!amHost) return;
   const total = (roomData.questionOrder && roomData.questionOrder.length) || QUESTIONS.length;
   const next = roomData.currentQuestion + 1;
+  if(isSoloMode){
+    if(next >= total){
+      roomData.status = 'finished';
+    } else {
+      roomData.currentQuestion = next;
+      roomData.questionStartedAt = Date.now();
+    }
+    render();
+    return;
+  }
   if(next >= total){
     roomRef.update({ status:'finished' });
   } else {
@@ -660,9 +711,12 @@ document.getElementById('playAgainBtn').addEventListener('click', ()=>{
 });
 
 function leaveRoom(){
-  if(roomRef) roomRef.off();
-  if(amHost && roomRef) roomRef.remove();
+  if(!isSoloMode){
+    if(roomRef) roomRef.off();
+    if(amHost && roomRef) roomRef.remove();
+  }
   roomRef = null; roomData = null; myRoomCode = null; myPlayerId = null; amHost = false;
+  isSoloMode = false;
   lastRenderedQuestion = -1;
   lastRevealedQuestion = -1;
   clearTimeout(headstartTimer);
