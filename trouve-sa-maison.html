@@ -131,6 +131,8 @@
 
   <div class="tabs" style="flex-wrap:wrap;">
     <button class="tabbtn themebtn active" data-theme="animaux" style="flex:1 1 auto;min-width:calc(50% - 4px);">🐾 Animaux</button>
+    <button class="tabbtn themebtn" data-theme="couleurs" style="flex:1 1 auto;min-width:calc(50% - 4px);">🎨 Couleurs</button>
+    <button class="tabbtn themebtn" data-theme="formes" style="flex:1 1 auto;min-width:calc(50% - 4px);">⭐ Formes</button>
     <button class="tabbtn themebtn" data-theme="drapeaux" style="flex:1 1 auto;min-width:calc(50% - 4px);">🚩 Drapeaux</button>
     <button class="tabbtn themebtn" data-theme="aliments" style="flex:1 1 auto;min-width:calc(50% - 4px);">🍎 Aliments</button>
     <button class="tabbtn themebtn" data-theme="mots" style="flex:1 1 auto;min-width:calc(50% - 4px);">🔤 Mots</button>
@@ -225,6 +227,23 @@ const THEMES = {
     categories: {
       ete:   {name:'Été',   icon:'☀️', items:['🩳','🕶️','🩴','🍦','🏖️']},
       hiver: {name:'Hiver', icon:'❄️', items:['🧥','🧣','⛄','🎿','🧤']}
+    }
+  },
+  couleurs: {
+    label: 'Couleurs', type: 'emoji',
+    categories: {
+      rouge: {name:'Rouge', icon:'🔴', items:['🔴','🍎','❤️','🚨','🌹','🍓']},
+      bleu:  {name:'Bleu',  icon:'🔵', items:['🔵','💙','🫐','🌊','🐳','🔷']},
+      jaune: {name:'Jaune', icon:'🟡', items:['🟡','💛','🍌','⭐','🌞','🐥']},
+      vert:  {name:'Vert',  icon:'🟢', items:['🟢','💚','🐸','🌳','🥦','🍀']}
+    }
+  },
+  formes: {
+    label: 'Formes', type: 'emoji',
+    categories: {
+      ronds:  {name:'Ronds',  icon:'⚪', items:['⚫','⚪','🔴','🔵','🟠','🟡','🟢','🟣']},
+      carres: {name:'Carrés', icon:'⬛', items:['⬛','⬜','🟥','🟧','🟨','🟩','🟦','🟪']},
+      coeurs: {name:'Cœurs',  icon:'❤️', items:['❤️','🧡','💛','💚','💙','💜','🖤','🤎']}
     }
   }
 };
