@@ -129,11 +129,14 @@
     <div class="centerline"></div>
   </header>
 
-  <div class="tabs">
-    <button class="tabbtn themebtn active" data-theme="animaux">🐾 Animaux</button>
-    <button class="tabbtn themebtn" data-theme="drapeaux">🚩 Drapeaux</button>
-    <button class="tabbtn themebtn" data-theme="aliments">🍎 Aliments</button>
-    <button class="tabbtn themebtn" data-theme="mots">🔤 Mots</button>
+  <div class="tabs" style="flex-wrap:wrap;">
+    <button class="tabbtn themebtn active" data-theme="animaux" style="flex:1 1 auto;min-width:calc(50% - 4px);">🐾 Animaux</button>
+    <button class="tabbtn themebtn" data-theme="drapeaux" style="flex:1 1 auto;min-width:calc(50% - 4px);">🚩 Drapeaux</button>
+    <button class="tabbtn themebtn" data-theme="aliments" style="flex:1 1 auto;min-width:calc(50% - 4px);">🍎 Aliments</button>
+    <button class="tabbtn themebtn" data-theme="mots" style="flex:1 1 auto;min-width:calc(50% - 4px);">🔤 Mots</button>
+    <button class="tabbtn themebtn" data-theme="metiers" style="flex:1 1 auto;min-width:calc(50% - 4px);">👩‍⚕️ Métiers</button>
+    <button class="tabbtn themebtn" data-theme="transport" style="flex:1 1 auto;min-width:calc(50% - 4px);">🚗 Transport</button>
+    <button class="tabbtn themebtn" data-theme="saisons" style="flex:1 1 auto;min-width:calc(50% - 4px);">☀️ Saisons</button>
   </div>
 
   <div class="tabs">
@@ -198,6 +201,30 @@ const THEMES = {
       noms:       {name:'Noms',       icon:'📦', items:['Chat','Maison','École','Ballon','Arbre']},
       verbes:     {name:'Verbes',     icon:'🏃', items:['Courir','Manger','Dormir','Chanter','Sauter']},
       adjectifs:  {name:'Adjectifs',  icon:'✨', items:['Grand','Joli','Rapide','Heureux','Froid']}
+    }
+  },
+  metiers: {
+    label: 'Métiers', type: 'text',
+    categories: {
+      hopital:    {name:'Hôpital',    icon:'🏥', items:['Médecin','Infirmière','Chirurgien','Ambulancier','Dentiste']},
+      ecole:      {name:'École',      icon:'🏫', items:['Enseignant','Directeur','Concierge','Surveillant','Bibliothécaire']},
+      restaurant: {name:'Restaurant', icon:'🍽️', items:['Chef cuisinier','Serveur','Pâtissier','Plongeur','Sommelier']},
+      ferme:      {name:'Ferme',      icon:'🚜', items:['Agriculteur','Éleveur','Vétérinaire','Apiculteur','Jardinier']}
+    }
+  },
+  transport: {
+    label: 'Transport', type: 'emoji',
+    categories: {
+      terre: {name:'Terre', icon:'🌍', items:['🚗','🚌','🚲','🏍️','🚂']},
+      air:   {name:'Air',   icon:'☁️', items:['✈️','🚁','🚀','🎈','🪂']},
+      eau:   {name:'Eau',   icon:'🌊', items:['⛵','🚢','🛶','🚤','⛴️']}
+    }
+  },
+  saisons: {
+    label: 'Saisons', type: 'emoji',
+    categories: {
+      ete:   {name:'Été',   icon:'☀️', items:['🩳','🕶️','🩴','🍦','🏖️']},
+      hiver: {name:'Hiver', icon:'❄️', items:['🧥','🧣','⛄','🎿','🧤']}
     }
   }
 };
