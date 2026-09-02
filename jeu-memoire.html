@@ -61,6 +61,8 @@
   .btn-ghost{background:transparent;color:var(--texte-att);border:1px solid #234F4C;}
 
   .difficulty{display:flex;gap:8px;padding:14px 16px 0;}
+  #memThemeRow{flex-wrap:wrap;}
+  #memThemeRow .tabbtn{flex:1 1 auto;min-width:calc(50% - 4px);}
 
   .memgrid{display:grid;gap:8px;padding:16px;}
   .memcard{aspect-ratio:1;perspective:600px;cursor:pointer;}
@@ -103,6 +105,14 @@
     <div class="pill coinpill">Pièces&nbsp;<b id="coinCount">20</b></div>
   </div>
 
+  <div class="difficulty" id="memThemeRow">
+    <button class="tabbtn memthemebtn active" data-theme="animaux">🐾 Animaux</button>
+    <button class="tabbtn memthemebtn" data-theme="fruits">🍎 Fruits & Légumes</button>
+    <button class="tabbtn memthemebtn" data-theme="sports">⚽ Sports</button>
+    <button class="tabbtn memthemebtn" data-theme="transport">🚗 Transport</button>
+    <button class="tabbtn memthemebtn" data-theme="meteo">🌈 Météo & Espace</button>
+  </div>
+
   <div class="difficulty">
     <button class="tabbtn diffbtn" data-diff="facile">Facile (6 paires)</button>
     <button class="tabbtn diffbtn active" data-diff="normal">Normal (8 paires)</button>
@@ -142,7 +152,29 @@
 </div>
 
 <script>
-const ANIMALS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦆','🦉','🦇','🐺','🦄','🐝','🦋','🐢','🐍','🦎','🐙','🐬','🦈','🐳','🦒'];
+const MEM_THEMES = {
+  animaux: {
+    label: 'Animaux',
+    items: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦆','🦉','🦇','🐺','🦄','🐝','🦋','🐢','🐍','🦎','🐙','🐬','🦈','🐳','🦒']
+  },
+  fruits: {
+    label: 'Fruits & Légumes',
+    items: ['🍎','🍌','🍇','🍓','🍊','🍋','🍉','🍒','🍑','🥝','🍍','🥭','🥕','🥦','🌽','🍅','🥔','🍆','🥒','🫑','🧄','🧅','🥬','🍄']
+  },
+  sports: {
+    label: 'Sports',
+    items: ['⚽','🏀','🏈','⚾','🎾','🏐','🏓','🏸','🥊','🏒','🎳','🏹','⛳','🏂','⛷️','🏄','🚴','🏊','🤺','🥋','🎯','🏆','🥇','🎿']
+  },
+  transport: {
+    label: 'Transport',
+    items: ['🚗','🚕','🚌','🚓','🚑','🚒','🚚','🚲','🏍️','✈️','🚀','🚢','⛵','🚂','🚁','🛵','🚜','🛴','🚡','🛶','🛺','⛴️','🚋','🎠']
+  },
+  meteo: {
+    label: 'Météo & Espace',
+    items: ['☀️','🌙','⭐','🌈','☁️','🌧️','⛈️','❄️','🌪️','🔥','💧','🌊','🌍','🪐','☄️','🌠','🌤️','🌦️','🌩️','🌫️','💨','⚡','🌡️','🌌']
+  }
+};
+let currentMemTheme = 'animaux';
 
 const COIN_STORAGE_KEY = 'quiEstCeCoinsGlobal';
 function loadSavedCoins(){
@@ -211,6 +243,14 @@ document.querySelectorAll('.diffbtn').forEach(btn=>{
   });
 });
 
+document.querySelectorAll('.memthemebtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentMemTheme = btn.dataset.theme;
+    document.querySelectorAll('.memthemebtn').forEach(b=>b.classList.toggle('active', b===btn));
+    startGame();
+  });
+});
+
 /* ---------- Game state ---------- */
 const memGridEl = document.getElementById('memGrid');
 const soloMovesEl = document.getElementById('soloMoves');
@@ -233,7 +273,7 @@ let p2Score = 0;
 function startGame(){
   const cfg = DIFFICULTY[difficulty];
   totalPairs = cfg.pairs;
-  const chosen = shuffle(ANIMALS).slice(0, cfg.pairs);
+  const chosen = shuffle(MEM_THEMES[currentMemTheme].items).slice(0, cfg.pairs);
   cards = shuffle([...chosen, ...chosen]).map((icon,i)=>({icon, id:i, matched:false}));
   flippedIdx = [];
   matchedCount = 0;
