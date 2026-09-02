@@ -30,7 +30,9 @@
   }
   .wrap{max-width:640px;margin:0 auto;padding:0 0 60px;}
 
-  header{padding:28px 20px 22px;text-align:center;}
+  header{padding:28px 20px 22px;text-align:center;position:relative;}
+  .homelink{position:absolute;top:16px;left:16px;font-size:13px;color:var(--texte-att);text-decoration:none;padding:6px 10px;border-radius:8px;background:var(--acier-clair);}
+  .homelink:active{opacity:.7;}
   .eyebrow{font-size:13px;color:var(--texte-att);margin:0 0 6px;}
   h1{
     font-family:"Arial Narrow",Arial,sans-serif;
@@ -86,6 +88,7 @@
 <body>
 <div class="wrap">
   <header>
+    <a href="index-famille.html" class="homelink">← Accueil</a>
     <p class="eyebrow">Trouve toutes les paires d'animaux</p>
     <h1>Jeu de<br><span>Mémoire</span></h1>
     <div class="centerline"></div>
