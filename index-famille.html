@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jeux en Famille — Accueil</title>
+<style>
+  :root{
+    --or: #D9A441;
+    --glace: #EDF1F5;
+    --acier: #14121C;
+    --acier-clair: #201C2E;
+    --texte-att: #9993B3;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(217,164,65,0.14), transparent 60%),
+      var(--acier);
+    color:var(--glace);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 0 60px;}
+
+  header{padding:32px 20px 20px;text-align:center;}
+  h1{
+    font-family:"Arial Narrow",Arial,sans-serif;
+    font-weight:900;font-stretch:condensed;font-size:40px;line-height:0.95;
+    margin:0;letter-spacing:0.5px;text-transform:uppercase;
+    text-shadow:0 2px 0 rgba(0,0,0,0.25);
+  }
+  h1 span{color:var(--or);}
+  p.eyebrow{font-size:13px;color:var(--texte-att);margin:10px 0 0;}
+
+  .coinbar{display:flex;justify-content:center;padding:16px 20px 0;}
+  .coinpill{
+    background:linear-gradient(90deg, rgba(217,164,65,0.18), rgba(217,164,65,0.05));
+    border:1px solid rgba(217,164,65,0.35);
+    border-radius:999px;
+    padding:9px 18px;
+    font-size:15px;
+    color:var(--texte-att);
+  }
+  .coinpill b{color:var(--or);font-size:17px;}
+
+  .themes{padding:22px 16px 0;display:flex;flex-direction:column;gap:14px;}
+  .theme-card{
+    display:flex;
+    text-decoration:none;
+    color:inherit;
+    border-radius:18px;
+    padding:20px;
+    align-items:center;
+    gap:16px;
+    min-height:96px;
+  }
+  .theme-card.quiz{background:linear-gradient(135deg, #E8590C, #7A2C05);}
+  .theme-card.memoire{background:linear-gradient(135deg, #0E9594, #0A6867);}
+  .theme-card.association{background:linear-gradient(135deg, #2E86DE, #1B5FA8);}
+  .theme-icon{
+    width:56px;height:56px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.14);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    flex-shrink:0;
+  }
+  .theme-info h2{margin:0 0 4px;font-size:19px;font-weight:800;}
+  .theme-info p{margin:0;font-size:12.5px;color:rgba(255,255,255,0.8);}
+
+  footer{padding:30px 20px 0;text-align:center;font-size:12px;color:var(--texte-att);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Trois jeux, une seule cagnotte de pièces</p>
+    <h1>Jeux en<span> Famille</span></h1>
+  </header>
+
+  <div class="coinbar">
+    <div class="coinpill">Pièces&nbsp;<b id="coinCount">20</b></div>
+  </div>
+
+  <div class="themes">
+    <a class="theme-card quiz" href="quiz-famille.html">
+      <div class="theme-icon">🧠</div>
+      <div class="theme-info">
+        <h2>Quiz Familial</h2>
+        <p>Solo ou en temps réel, plusieurs catégories</p>
+      </div>
+    </a>
+
+    <a class="theme-card memoire" href="jeu-memoire.html">
+      <div class="theme-icon">🐾</div>
+      <div class="theme-info">
+        <h2>Jeu de Mémoire</h2>
+        <p>Trouve les paires, solo ou à deux</p>
+      </div>
+    </a>
+
+    <a class="theme-card association" href="trouve-sa-maison.html">
+      <div class="theme-icon">🧩</div>
+      <div class="theme-info">
+        <h2>Jeu d'Association</h2>
+        <p>Animaux, drapeaux, aliments, mots</p>
+      </div>
+    </a>
+  </div>
+
+  <footer>Les pièces sont partagées entre les trois jeux.</footer>
+</div>
+
+<script>
+const COIN_STORAGE_KEY = 'quiEstCeCoinsGlobal';
+function loadSavedCoins(){
+  try{
+    const saved = localStorage.getItem(COIN_STORAGE_KEY);
+    if(saved !== null){ const n = parseInt(saved, 10); if(!isNaN(n)) return n; }
+  }catch(e){}
+  return 20;
+}
+document.getElementById('coinCount').textContent = loadSavedCoins();
+</script>
+</body>
+</html>
